@@ -1,0 +1,14 @@
+<span
+    class="groupedTag"
+    ng-click="eventHandlers.groupTagShow.click()"></span>
+<div class="groupedTagList autocomplete" ng-if="suggestionList.visible">
+    <ul class="suggestion-list">
+        <li class="suggestion-item"
+            ng-repeat="item in suggestionList.items track by track(item)"
+            ng-class="{selected: item == suggestionList.selected, 'group-suggestion': item.isGroup}"
+            ng-click="addSuggestionByIndex($index)"
+            ng-mouseenter="suggestionList.select($index)">
+            {{item.name}}
+        </li>
+    </ul>
+</div>

@@ -238,6 +238,23 @@ tagsInput.directive('tagsInput', function($timeout, $document, $window, $q, tags
                     }
                 };
             };
+
+            this.registerGroupTags = function() {
+                var input = $element.find('input');
+
+                return {
+                    addTag: function(tag) {
+                        return $scope.tagList.add(tag);
+                    },
+                    getOptions: function() {
+                        return $scope.options;
+                    },
+                    on: function(name, handler) {
+                        $scope.events.on(name, handler);
+                        return this;
+                    }
+                };
+            };
         },
         link: function(scope, element, attrs, ngModelCtrl) {
             var hotkeys = [KEYS.enter, KEYS.comma, KEYS.space, KEYS.backspace, KEYS.delete, KEYS.left, KEYS.right],
