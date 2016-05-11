@@ -28,15 +28,19 @@ tagsInput.directive('groupFilter', function($timeout, $document, $sce, $q, $wind
             self.index = -1;
             self.selected = null;
             self.query = null;
+            self.loading = false;
         };
 
         self.show = function() {
+            self.loading = false;
             self.visible = true;
         };
 
-        self.load = tiUtil.debounce(function(query, tags) {
-            var promise = $q.when(loadFn({ $query: query }));
+        self.load = tiUtil.debounce(function(selected, tags) {
+            var query = (selected !== undefined ? selected.id : undefined),
+                promise = $q.when(loadFn({ $query: query }));
             lastPromise = promise;
+            self.loading = true;
 
             promise.then(function(items) {
                 if (promise !== lastPromise) {
@@ -44,6 +48,12 @@ tagsInput.directive('groupFilter', function($timeout, $document, $sce, $q, $wind
                 }
                 items = tiUtil.makeObjectArray(items.data || items, getTagId());
                 items = getDifference(items, tags);
+
+                if(selected !== undefined) {
+                    selected.canSelect = 1;
+                    items = [selected].concat(items);
+                }
+
                 self.items = items;
 
                 if (self.items.length > 0) {
@@ -117,16 +127,18 @@ tagsInput.directive('groupFilter', function($timeout, $document, $sce, $q, $wind
 
             scope.addSuggestion = function() {
                 var added = false,
-                    selectedGroupID = null;
+                    selectedGroup = null;
 
                 if (suggestionList.selected) {
-                    if(suggestionList.selected.isGroup) {
+                    if(suggestionList.selected.isGroup &&
+                        suggestionList.selected.canSelect === undefined &&
+                        suggestionList.selected.canSelect !== 1) {
                         //Load The Tags in this group
-                        selectedGroupID = suggestionList.selected.id;
+                        selectedGroup = angular.copy(suggestionList.selected);
                         suggestionList.reset();
-                        suggestionList.load(selectedGroupID, []);
+                        suggestionList.load(selectedGroup, []);
                     } else {
-                        //Select the tag adn reset
+                        //Select the tag and reset
                         tagsInput.addTag(angular.copy(suggestionList.selected));
                         suggestionList.reset();
                         added = true;
